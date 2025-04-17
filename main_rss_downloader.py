@@ -5,6 +5,7 @@ import re #regular expression library
 import os # 'os' module
 import datetime
 
+
 def clean_filename(title):
     """cleans a string into a pure lovely filename"""
     filename = title.replace(" ","_") #replace space with underscore
@@ -194,17 +195,90 @@ while True: #loops forever until break out
                except ValueError:
                     print("Invalid date format. Please enter the date in YYYY-MM-DD format.")
 
+          end_date_boundary = max_date_user + datetime.timedelta(days=1) #this fixes an error because of stripping the timezone data
           episodes_in_range = [] #empty list to store date matches
 
           for episode in episode_details: #loop through parsed episodes
                episode_date = episode['date'] #gets the datetime object for this episode
 
-               episode_date_naive = episode_date.replace(tzinfo=None) #to fix a TypeError cus of naive and aware datetimes but this causes an error by missing dates
+               episode_date_naive = episode_date.replace(tzinfo=None) #to fix a TypeError cus of naive and aware datetimes
 
                #check if episode date is within user selected range with this cool chain comparison thing 
-               if min_date_user <= episode_date_naive <= max_date_user:
+               if min_date_user <= episode_date_naive < end_date_boundary:
                     episodes_in_range.append(episode) #add it to the episodes in range list
 
-          range_confirmation = input(f"Found {len(episodes_in_range)} episodes between these dates. Download episodes? (yes/no): ") #why dont you work i dont understand 
+          if not episodes_in_range:
+               print("No episodes found within specified range.")
+               continue
 
+          range_confirmation = input(f"Found {len(episodes_in_range)} episodes between these dates. Download episodes? (yes/no): ")  
+
+          if range_confirmation not in ["yes", "y", "Y", "YES"]: #checking answer
+               print("Download cancelled by user.")
+               continue
+
+          while True:
+               folder_prompt = "Enter the full folder path to download episodes to, or leave blank for current directory: "
+
+               download_folder_input = input(folder_prompt) #ive learnt i can reuse variable names if theyre in different code blocks is okay oof
+
+               if not download_folder_input:
+                    download_folder = ""
+                    confirmed_folder = os.path.abspath(os.getcwd()) #finds current directory
+                    print(f"Using current directory: {confirmed_folder}")
+                    break
+               
+               elif os.path.isdir(download_folder_input): #valid directory entered babyyyy
+                    download_folder = download_folder_input #store path
+                    confirmed_folder = os.path.abspath(download_folder)
+                    print(f"Downloading to folder: {confirmed_folder}")
+                    break #exit outta here
+
+               else: #input if neither are valid
+                    print(f"Error: '{download_folder_input}' is not a valid directory path.")
+                    #loop repeats until either default or valid directory
+          
+          if download_folder:
+               display_path = os.path.abspath(download_folder) #if specific folder was chosen
+          else:
+               display_path = os.path.abspath(os.getcwd()) #if using current directory
+          
+          confirm_download = input(f"Start download of {len(episodes_in_range)} episodes to {display_path}? (yes/no):") #confirming
+
+          if confirm_download not in ["yes", "y", "Y", "YES"]: #check answer
+               print("Download cancelled by user.")
+               continue
+
+          print("Starting download...")
+
+          for episode in episodes_in_range:
+               cleaned_title = clean_filename(episode['title'])  # clean title for filename
+               filename = f"{cleaned_title}.mp3"  # create a filename with .mp3 extension
+
+               filepath = os.path.join(download_folder, filename)  # create full file path
+
+               print(f"Downloading: {filename} from {episode['url']}")  # Print download info
+               try:
+                    urllib.request.urlretrieve(episode['url'], filepath)
+                    print(f"Downloaded: {filename}")
+               except Exception as e:
+                    print(f"Error downloading {filename} from {episode['url']}: {e}")
+
+          print("\nDownload complete!") #completion message
+          post_download_choice = input("Download complete. Enter 0 to Quit, or press Enter to return to the main menu: ")
+
+          if post_download_choice == '0':
+                print("Exiting program.")
+                break #exit the main while loop 
+          else: 
+               print("Returning to main menu.")
+               continue #return to start of main while loop
+
+
+
+
+
+
+          
+          
                
