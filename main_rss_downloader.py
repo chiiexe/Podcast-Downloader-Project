@@ -12,6 +12,15 @@ def clean_filename(title):
     filename = re.sub(r'[^a-zA-Z0-9_.-]','',filename) #removes chars not alphanumeric or underscore but keeps periods and hyphens
     return filename
 
+def clear_screen():
+     """Clears the terminal screen. """
+     if os.name == 'nt': #windows
+          os.system('cls')
+     else: #macOS and linux (os.name is 'posix')
+          os.system('clear')
+
+
+
 
 rss_feed_url = input("Please enter the RSS feed URL: ") #get url from user input
 
@@ -295,6 +304,12 @@ while True: #loops forever until break out
 
           #slice indices fun
           while True: 
+
+               clear_screen()
+               print(f"Podcast: {podcast_title}")
+               print(f"Total episodes: {total_episodes}")
+               print("---") #separator
+
                start_index = current_page * page_size #so first index is at p * page_size, cus p is current_page variable starting at 0
                end_index = start_index + page_size #the index after the last episode on the page is (p + 1) * page_size #end_index = min(start_index + page_size, total_episodes)
 
