@@ -273,12 +273,67 @@ while True: #loops forever until break out
           else: 
                print("Returning to main menu.")
                continue #return to start of main while loop
-
-
-
-
-
-
           
-          
+     elif choice == '3':
+
+          if not episode_details:
+               print("No episodes to list.")
+               continue
+
+          print(f"Okay, listing {len(episode_details)} episodes.")
+
+          page_size = 15
+
+          total_episodes = len(episode_details)
+          total_pages = (total_episodes + page_size - 1) // page_size
+
+          current_page = 0
+
+          #display episodes for current page
+          #show user what page theyre on
+          #ask user what they want to do next (next page, previous page, choose select episodes to download, return to menu)
+
+          #slice indices fun
+          while True: 
+               start_index = current_page * page_size #so first index is at p * page_size, cus p is current_page variable starting at 0
+               end_index = start_index + page_size #the index after the last episode on the page is (p + 1) * page_size #end_index = min(start_index + page_size, total_episodes)
+
+               episodes_on_page = episode_details[start_index:end_index]
+
+               print("\n--- Episodes on this page ---")
+               if not episodes_on_page: #should be redudant check
+                    print(" (No episodes on this page - this shouldn't happen.)")
+               else: #loop through the episodes for the current page
+
+                    for index, episode in enumerate(episodes_on_page, start=start_index): #use enumerate starting from the overall index of the first item on this page
+
+                         display_date = episode['date'].strftime("%Y-%m-%d") #format date for display
+
+                         print(f"{index + 1}. {episode['title']} ({display_date})") #print the episode number (+1 cus we start from 1) plus title and date (maybe reformat to show day first?)
                
+               print("-----------------\n")
+               print(f"Page {current_page + 1} of {total_pages}")
+
+               prompt_message = "Enter 'n' for next, 'p' for previous, 'q' to quit listing:"
+
+               user_command = input(prompt_message).lower() #get input n convert to lower
+
+               if user_command == 'q':
+                    print("Returning to menu.")
+                    break
+               
+               elif user_command == 'n':
+                    if current_page < total_pages - 1: #if we are NOT on the last page, we increase page number
+                         #change current page
+                         current_page += 1
+                    else: #if check was false, we ARE on last page
+                         print("\nAlready on the last page.")
+
+               elif user_command == 'p':
+                    if current_page > 0: #check we're not on the first page, index 0
+                         current_page -= 1 #if check is good, safe to decrease by 1
+                    else:
+                         print("\nAlready on first page.")
+
+               else:
+                    print("Not a valid command. Please use 'n' for next page, 'p' for previous page, or 'q' to quit to menu.")
